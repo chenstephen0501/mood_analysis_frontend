@@ -1,9 +1,5 @@
-<template>
+<template> 
   <div id="app-root">
-    <header>
-      <router-link :to="{ name: 'Home' }">Home</router-link> /
-      <router-link :to="{ name: 'About' }">About</router-link> /
-    </header>
     <main>
       <router-view />
     </main>
@@ -13,7 +9,6 @@
 
 <script setup>
 </script>
-
 
 <style scoped>
 </style>
