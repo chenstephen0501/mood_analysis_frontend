@@ -1,12 +1,13 @@
-// main.js
 import { createApp } from 'vue'
-import './style.css';
 import App from './App.vue'
 import router from './router'
 
+// 引入 Tailwind CSS
+import './assets/tailwind.css'
+
 // 引入 Element Plus
-import ElementPlus from 'element-plus'// ⬅️element-plus
-import 'element-plus/dist/index.css'  // ⬅️element-plus CSS
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
 const app = createApp(App)
 app.use(router)
