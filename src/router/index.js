@@ -1,15 +1,13 @@
-import { createRouter, createWebHistory  } from "vue-router";
-import Home from '../views/Home.vue';
+// src/router/index.js
+import { createRouter, createWebHistory } from 'vue-router'
+import authRoutes from './auth.routes' // 匯入
 
 const routes = [
-  { path: '/',
-    name: 'Home',
-    component: Home
+  {
+    path: '/',
+    redirect: '/login',
   },
-  { path: '/about',
-    name: 'About',
-    component: () => import('../views/About.vue')
-  }
+  ...authRoutes, // 把 auth.routes.js 裡的路由展開合併進來
 ]
 
 const router = createRouter({
