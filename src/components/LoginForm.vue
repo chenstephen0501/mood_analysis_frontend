@@ -1,46 +1,79 @@
 <template>
   <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 px-4"
+    class="bg-white bg-opacity-80 p-10 rounded-[22px] backdrop-blur-md"
+    style="backdrop-filter: saturate(180%) blur(10px);"
   >
-    <div
-      class="bg-white p-10 rounded-3xl shadow-2xl max-w-sm w-full"
-      style="backdrop-filter: saturate(180%) blur(10px);"
+    <!-- LOGO -->
+    <Logo />
+
+    <!-- 標題 -->
+    <h1
+      class="text-3xl font-extrabold text-center text-pink-700 mb-8 drop-shadow-md"
     >
-      <h1 class="text-3xl font-extrabold text-center text-blue-900 mb-8 drop-shadow-md">
-        心情日記登入
-      </h1>
-      <el-form :model="form" :rules="rules" ref="loginForm" label-position="top">
-        <el-form-item label="Email" prop="email">
-          <el-input
-            v-model="form.email"
-            placeholder="請輸入 Email"
-            class="rounded-md"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="密碼" prop="password">
-          <el-input
-            type="password"
-            v-model="form.password"
-            placeholder="請輸入密碼"
-            class="rounded-md"
-          ></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            class="w-full text-lg font-semibold"
-            @click="handleLogin"
-            >登入</el-button
-          >
-        </el-form-item>
-      </el-form>
-    </div>
+      心情日記登入
+    </h1>
+
+    <!-- 登入表單 -->
+    <el-form
+      :model="form"
+      :rules="rules"
+      ref="loginForm"
+      label-position="top"
+    >
+      <!-- Email -->
+      <el-form-item label="Email" prop="email">
+        <el-input
+          v-model="form.email"
+          placeholder="請輸入 Email"
+          class="rounded-md"
+        >
+          <template #prefix>
+            <i class="el-icon-message text-pink-400"></i>
+          </template>
+        </el-input>
+      </el-form-item>
+
+      <!-- 密碼 -->
+      <el-form-item label="密碼" prop="password">
+        <el-input
+          type="password"
+          v-model="form.password"
+          placeholder="請輸入密碼"
+          class="rounded-md"
+        >
+          <template #prefix>
+            <i class="el-icon-lock text-pink-400"></i>
+          </template>
+        </el-input>
+      </el-form-item>
+
+      <!-- 登入按鈕 -->
+      <el-form-item>
+        <el-button
+          class="w-full text-lg font-semibold text-white border-none bg-gradient-to-r from-pink-400 to-yellow-400 hover:brightness-110"
+          @click="handleLogin"
+        >
+          登入
+        </el-button>
+      </el-form-item>
+    </el-form>
+    <!-- 註冊連結 -->
+    <p class="mt-4 text-center text-sm text-gray-600">
+      還沒有帳號嗎？
+      <router-link
+        to="/register"
+        class="text-pink-500 hover:underline font-medium"
+      >
+        立即註冊
+      </router-link>
+    </p>
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
+import Logo from "./Logo.vue";
 
 const loginForm = ref(null);
 const form = ref({ email: "", password: "" });
@@ -56,7 +89,6 @@ const rules = {
 function handleLogin() {
   loginForm.value.validate((valid) => {
     if (valid) {
-      // 這邊之後串接 API
       console.log("登入資料", form.value);
       ElMessage.success("登入成功（模擬）");
     } else {
@@ -66,4 +98,6 @@ function handleLogin() {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+/* 這裡可以針對 form 做額外樣式調整 */
+</style>
