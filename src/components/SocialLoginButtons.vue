@@ -1,6 +1,6 @@
 <template>
   <div class="mt-6 text-center">
-    <p class="mb-4 text-pink-600 font-medium">或使用社群帳號登入</p>
+    <p class="mb-4 text-pink-600 font-medium">或使用社群帳號{{ actionText }}</p>
     <div class="flex justify-between items-center gap-4">
       <button
         @click="$emit('line-login')"
@@ -30,7 +30,11 @@
 </template>
 
 <script setup>
-// 透過 emit 傳事件給父層控制
+defineProps({
+  actionText: {
+    type: String,
+    default: '登入', // 預設為登入
+  },
+});
 </script>
-
 <style scoped></style>

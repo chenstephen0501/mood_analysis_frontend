@@ -14,10 +14,11 @@
       >
         <LoginForm />
         <SocialLoginButtons
-          class="mt-6"
-          @line-login="handleLineLogin"
-          @fb-login="handleFbLogin"
-          @ig-login="loginWithInstagram"
+            class="mt-6"
+            actionText="登入"
+            @line-login="handleLineLogin"
+            @fb-login="handleFbLogin"
+            @ig-login="handleIgLogin"
         />
       </div>
     </div>
