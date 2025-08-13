@@ -51,14 +51,22 @@
         </el-input>
       </el-form-item>
 
-      <!-- 註冊按鈕 -->
+      <!-- 註冊按鈕 + 返回按鈕 -->
       <el-form-item>
-        <el-button
-          class="w-full text-lg font-semibold text-white border-none bg-gradient-to-r from-pink-400 to-yellow-400 hover:brightness-110"
-          @click="handleRegister"
-        >
-          註冊
-        </el-button>
+        <div class="flex gap-2 w-full">
+          <el-button
+            class="flex-1 text-lg font-semibold text-white border-none bg-gradient-to-r from-pink-400 to-yellow-400 hover:brightness-110"
+            @click="goBack"
+          >
+            返回
+          </el-button>
+          <el-button
+            class="flex-1 text-lg font-semibold text-white border-none bg-gradient-to-r from-pink-400 to-yellow-400 hover:brightness-110"
+            @click="handleRegister"
+          >
+            註冊
+          </el-button>
+        </div>
       </el-form-item>
     </el-form>
   </div>
@@ -68,9 +76,16 @@
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import AvatarUploader from './AvatarUpload.vue';
-
+import { useRouter } from 'vue-router';
 const registerForm = ref(null);
 const modelValue = ref('');
+
+
+const router = useRouter();
+
+function goBack() {
+  router.push('/login');
+}
 
 const form = ref({
   name: '',
