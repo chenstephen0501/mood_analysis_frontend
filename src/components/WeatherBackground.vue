@@ -1,35 +1,38 @@
 <template>
-  <div :class="['min-h-screen w-full relative overflow-hidden', weatherClass]">
-    <!-- 雲朵 -->
+  <div class="weather-scene" :style="sceneStyle">
+    <!-- 雲 -->
     <div class="cloud cloud-1"></div>
     <div class="cloud cloud-2"></div>
     <div class="cloud cloud-3"></div>
 
-    <!-- 陰雨天：雨滴 -->
-    <div v-if="weather === 'rainy'" v-for="drop in rainDrops" :key="drop.id"
-         class="rain-drop"
-         :style="{ left: drop.left + '%', animationDuration: drop.duration + 's', animationDelay: drop.delay + 's' }">
-    </div>
+    <!-- 雨滴 -->
+    <div
+      v-for="drop in rainDrops"
+      :key="drop.id"
+      class="rain-drop"
+      :style="{
+        left: drop.left + '%',
+        animationDuration: drop.duration + 's',
+        animationDelay: drop.delay + 's',
+        opacity: rainOpacity
+      }"
+    ></div>
 
-    <!-- 晴天：太陽 -->
-    <div v-if="weather === 'sunny'" class="sun"></div>
+    <!-- 太陽 -->
+    <div class="sun" :style="{ transform: `translateY(${sunPosition}%)`, opacity: sunOpacity }"></div>
 
-    <!-- slot: 可以放頁面內容 -->
     <slot></slot>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
-
-const props = defineProps({
-  weather: {
-    type: String,
-    default: "rainy", // 預設陰雨天
-  },
-});
+import { ref, onMounted, computed } from "vue";
 
 const rainDrops = ref([]);
+const rainOpacity = ref(1);
+const sunOpacity = ref(0);
+const sunPosition = ref(150);
+const bgProgress = ref(0); // 0 = 深灰, 1 = 淺灰, 2 = 藍天
 
 function createRainDrops(count) {
   rainDrops.value = Array.from({ length: count }, (_, i) => ({
@@ -40,47 +43,80 @@ function createRainDrops(count) {
   }));
 }
 
-// 監聽天氣切換
-watch(() => props.weather, (newWeather) => {
-  if (newWeather === "rainy") {
-    createRainDrops(80);
-  } else {
-    rainDrops.value = [];
-  }
-}, { immediate: true });
+onMounted(() => {
+  createRainDrops(80);
 
-const weatherClass = computed(() => {
-  return props.weather === "rainy"
-    ? "bg-overcast-animated"
-    : "bg-sunny-animated";
+  // 雨量減少 & 天漸亮
+  let drops = 80;
+  const rainInterval = setInterval(() => {
+    drops -= 1.5;
+    rainOpacity.value = Math.max(drops / 80, 0);
+    bgProgress.value = 1 - rainOpacity.value; // 背景循序漸亮
+    if (drops <= 0) {
+      clearInterval(rainInterval);
+      rainDrops.value = [];
+      startSunAnimation();
+    } else {
+      createRainDrops(Math.ceil(drops));
+    }
+  }, 250);
+});
+
+function startSunAnimation() {
+  let pos = 150;
+  const sunInterval = setInterval(() => {
+    pos -= 1.5;
+    sunPosition.value = pos;
+    sunOpacity.value += 0.015;
+    if (pos <= 0) {
+      clearInterval(sunInterval);
+      startBlueSkyTransition();
+    }
+  }, 200);
+}
+
+function startBlueSkyTransition() {
+  let progress = 1; // 從淺灰開始
+  const interval = setInterval(() => {
+    progress += 0.02; // 5 秒內慢慢過渡到藍天
+    bgProgress.value = Math.min(progress, 2);
+    if (bgProgress.value >= 2) clearInterval(interval);
+  }, 50);
+}
+
+// 背景顏色循序漸進
+const sceneStyle = computed(() => {
+  const darkGray = { r: 75, g: 85, b: 99 };    // 深灰
+  const lightGray = { r: 162, g: 187, b: 213 }; // 淺灰
+  const blueSky = { r: 135, g: 206, b: 235 };   // 藍天
+
+  let r, g, b;
+  if (bgProgress.value <= 1) {
+    // 深灰 -> 淺灰
+    r = darkGray.r + (lightGray.r - darkGray.r) * bgProgress.value;
+    g = darkGray.g + (lightGray.g - darkGray.g) * bgProgress.value;
+    b = darkGray.b + (lightGray.b - darkGray.b) * bgProgress.value;
+  } else {
+    // 淺灰 -> 藍天
+    const p = bgProgress.value - 1;
+    r = lightGray.r + (blueSky.r - lightGray.r) * p;
+    g = lightGray.g + (blueSky.g - lightGray.g) * p;
+    b = lightGray.b + (blueSky.b - lightGray.b) * p;
+  }
+
+  return {
+    background: `linear-gradient(to bottom, rgb(${r},${g},${b}), rgb(${r - 10},${g - 10},${b - 10}))`,
+    transition: "background 0.25s linear"
+  };
 });
 </script>
 
 <style>
-/* 陰雨天背景漸變 */
-@keyframes overcastGradient {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 100% 100%; }
-  100% { background-position: 0% 0%; }
-}
-.bg-overcast-animated {
-  background: linear-gradient(to bottom, #4b5563, #6b7280, #374151);
-  background-size: 400% 400%;
-  animation: overcastGradient 20s ease infinite;
+.weather-scene {
+  min-height: 100vh;
+  width: 100%;
   position: relative;
-}
-
-/* 晴天背景 */
-@keyframes sunnyGradient {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 100% 100%; }
-  100% { background-position: 0% 0%; }
-}
-.bg-sunny-animated {
-  background: linear-gradient(to bottom, #aee1f9, #60c0f3, #3b82f6);
-  background-size: 400% 400%;
-  animation: sunnyGradient 30s ease infinite;
-  position: relative;
+  overflow: hidden;
 }
 
 /* 雨滴動畫 */
@@ -95,38 +131,23 @@ const weatherClass = computed(() => {
   height: 15px;
   background: rgba(255,255,255,0.7);
   top: -20px;
-  animation-name: raindrop;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  animation: raindrop linear infinite;
   z-index: 2;
 }
 
-/* 真實雲朵（陰雨+晴天共用） */
+/* 雲 */
 .cloud {
   position: absolute;
   background: rgba(255,255,255,0.8);
   border-radius: 50%;
   z-index: 1;
-  opacity: 0.9;
 }
-
-/* 雲1 */
 .cloud-1 { width: 220px; height: 70px; top: 20px; left: 10%; animation: cloudFloat 120s linear infinite; }
-.cloud-1::before { content: ''; position: absolute; width: 130px; height: 60px; top: -20px; left: 20px; background: rgba(255,255,255,0.8); border-radius: 50%; }
-.cloud-1::after { content: ''; position: absolute; width: 100px; height: 50px; top: 10px; left: 80px; background: rgba(255,255,255,0.8); border-radius: 50%; }
-/* 雲2 */
 .cloud-2 { width: 250px; height: 80px; top: 60px; left: 50%; animation: cloudFloat 150s linear infinite; opacity: 0.7; }
-.cloud-2::before { content: ''; position: absolute; width: 150px; height: 70px; top: -25px; left: 30px; background: rgba(255,255,255,0.7); border-radius: 50%; }
-.cloud-2::after { content: ''; position: absolute; width: 120px; height: 60px; top: 10px; left: 100px; background: rgba(255,255,255,0.7); border-radius: 50%; }
-/* 雲3 */
 .cloud-3 { width: 180px; height: 50px; top: 40px; left: 75%; animation: cloudFloat 180s linear infinite; opacity: 0.6; }
-.cloud-3::before { content: ''; position: absolute; width: 100px; height: 40px; top: -15px; left: 20px; background: rgba(255,255,255,0.7); border-radius: 50%; }
-.cloud-3::after { content: ''; position: absolute; width: 90px; height: 35px; top: 5px; left: 60px; background: rgba(255,255,255,0.7); border-radius: 50%; }
-
-/* 雲漂浮動畫 */
 @keyframes cloudFloat { 0% { transform: translateX(0); } 100% { transform: translateX(120vw); } }
 
-/* 晴天太陽 */
+/* 太陽 */
 .sun {
   position: absolute;
   top: 50px;
@@ -136,10 +157,8 @@ const weatherClass = computed(() => {
   background: radial-gradient(circle at center, #FFD700 0%, #FFA500 70%);
   border-radius: 50%;
   box-shadow: 0 0 50px 15px rgba(255, 215, 0, 0.5);
-  z-index: 1;
   animation: sunGlow 6s ease-in-out infinite alternate;
 }
-
 @keyframes sunGlow {
   0% { transform: scale(1); box-shadow: 0 0 30px 10px rgba(255,215,0,0.5); }
   100% { transform: scale(1.05); box-shadow: 0 0 60px 20px rgba(255,215,0,0.6); }
